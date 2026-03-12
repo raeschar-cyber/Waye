@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <title>Cancelled Checker</title>
+    <style>
+        body { 
+            margin: 0; 
+            height: 100vh; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            transition: background-color 0.5s ease; 
+            font-family: 'Segoe UI', sans-serif; 
+            background-color: rgb(255, 255, 255);
+        }
+        .card { 
+            background: rgba(255, 255, 255, 0.95); 
+            padding: 40px; 
+            border-radius: 25px; 
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+            text-align: center; 
+            width: 380px; 
+        }
+        h2 { color: #333; margin-bottom: 30px; min-height: 60px; }
+        .knop-container { display: flex; flex-direction: column; gap: 15px; }
+        button { 
+            padding: 15px; 
+            border: none; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 1.1rem;
+            transition: all 0.2s; 
+            background-color: #333; 
+            color: white;
+        }
+        button:hover { transform: scale(1.05); background-color: #000; }
+        
+        /* Styling voor het eindresultaat */
+        .resultaat-tekst {
+            font-size: 2.5rem;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        .cancelled { color: #d32f2f; }
+        .not-cancelled { color: #388e3c; }
+    </style>
+</head>
+<body id="bg">
+
+<div class="card">
+    <h2 id="vraagDisplay">Laden...</h2>
+    <div id="knoppen" class="knop-container"></div>
+</div>
+
+<script>
+    const mijnVragen = [
+        { vraag: "Pineapple on pizza", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Socks in sandals", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Self-sabotage", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Keeping plants alive", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Tattoo laser", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Snooze alarm clock", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Cats", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Dogs", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Not cleaning the phone", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Painting nails", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Prank call scammers", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Harry styles", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Spain", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "One knot in shoelaces", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Hummus", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Slipping", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Cap", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Smoking", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Bee", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Christmas", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+ 			{ vraag: "Horoscope", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+    ];
+
+    let score = 0;
+    let huidigeVraagIndex = 0;
+
+    function toonVraag() {
+        const display = document.getElementById('vraagDisplay');
+        const knoppenDiv = document.getElementById('knoppen');
+
+        if (huidigeVraagIndex >= mijnVragen.length) {
+            let eindTekst = "";
+            let klasse = "";
+
+            if (score < 0) {
+                eindTekst = "CANCELLED";
+                klasse = "cancelled";
+            } else if (score > 0) {
+                eindTekst = "NOT CANCELLED";
+                klasse = "not-cancelled";
+            } else {
+                eindTekst = "NEUTRAL";
+                klasse = "";
+            }
+
+            display.innerHTML = `<div class="resultaat-tekst ${klasse}">${eindTekst}</div>`;
+            knoppenDiv.innerHTML = '<button onclick="location.reload()">Try Again</button>';
+            return;
+        }
+
+        const data = mijnVragen[huidigeVraagIndex];
+        display.innerText = data.vraag;
+        knoppenDiv.innerHTML = ''; 
+
+        data.opties.forEach(optie => {
+            const btn = document.createElement('button');
+            btn.innerText = optie.tekst;
+            btn.onclick = () => verwerkAntwoord(optie.p);
+            knoppenDiv.appendChild(btn);
+        });
+    }
+
+    function verwerkAntwoord(punten) {
+        score += punten;
+        huidigeVraagIndex++;
+        updateKleur();
+        toonVraag();
+    }
+
+    function updateKleur() {
+        let r = 255, g = 255, b = 255;
+        let intensiteit = Math.min(Math.abs(score) * 40, 255);
+
+        if (score > 0) { 
+            r = 255 - intensiteit;
+            b = 255 - intensiteit;
+            g = 255; 
+        } else if (score < 0) {
+            g = 255 - intensiteit;
+            b = 255 - intensiteit;
+            r = 255;
+        }
+        
+        document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
+    }
+
+    toonVraag();
+</script>
+
+</body>
+</html>
