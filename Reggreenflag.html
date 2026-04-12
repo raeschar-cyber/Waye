@@ -1,201 +1,185 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-    <meta charset="UTF-8">
-    <title>Cancelled Checker</title>
-    <style>
-        body { 
-            margin: 0; 
-            height: 100vh; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            transition: background-color 0.5s ease; 
-            font-family: 'Segoe UI', sans-serif; 
-            background-color: rgb(255, 255, 255);
-        }
-        .card { 
-            background: rgba(255, 255, 255, 0.95); 
-            padding: 40px; 
-            border-radius: 25px; 
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
-            text-align: center; 
-            width: 380px; 
-        }
-        h2 { color: #333; margin-bottom: 30px; min-height: 60px; }
-        .knop-container { display: flex; flex-direction: column; gap: 15px; }
-        button { 
-            padding: 15px; 
-            border: none; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 1.1rem;
-            transition: all 0.2s; 
-            background-color: #333; 
-            color: white;
-        }
-        button:hover { transform: scale(1.05); background-color: #000; }
+<meta charset="UTF-8">
+<title>Cancelled Checker</title>
 
-        input {
-            padding: 10px;
-            border-radius: 10px;
-            border: 1px solid #ccc;
-            width: 80%;
-            margin-bottom: 15px;
-            font-size: 1rem;
-        }
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
-        .resultaat-tekst {
-            font-size: 2.5rem;
-            font-weight: 900;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-        }
-        .cancelled { color: #d32f2f; }
-        .not-cancelled { color: #388e3c; }
-    </style>
+<style>
+body { 
+    margin: 0; 
+    height: 100vh; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    transition: background-color 0.5s ease; 
+    font-family: 'Segoe UI', sans-serif; 
+    background-color: white;
+}
+.card { 
+    background: rgba(255,255,255,0.95); 
+    padding: 40px; 
+    border-radius: 25px; 
+    box-shadow: 0 10px 40px rgba(0,0,0,0.2); 
+    text-align: center; 
+    width: 380px; 
+}
+button { 
+    padding: 15px; 
+    border: none; 
+    border-radius: 12px; 
+    cursor: pointer; 
+    font-weight: bold; 
+    font-size: 1.1rem;
+    background: #333; 
+    color: white;
+}
+button:hover { transform: scale(1.05); background: black; }
+
+input {
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    width: 80%;
+    margin-bottom: 15px;
+}
+
+.resultaat-tekst {
+    font-size: 2.5rem;
+    font-weight: 900;
+}
+.cancelled { color: red; }
+.not-cancelled { color: green; }
+</style>
 </head>
-<body id="bg">
 
-<!-- START SCREEN -->
+<body>
+
 <div id="startScreen" class="card">
     <h2>Enter your name</h2>
-    <input type="text" id="naamInput" placeholder="Your name">
+    <input id="naamInput" placeholder="Your name">
     <br>
     <button onclick="startQuiz()">Start</button>
 </div>
 
-<!-- QUIZ -->
-<div class="card" id="quizCard" style="display:none;">
-    <h2 id="vraagDisplay">Laden...</h2>
-    <div id="knoppen" class="knop-container"></div>
+<div id="quizCard" class="card" style="display:none;">
+    <h2 id="vraagDisplay"></h2>
+    <div id="knoppen"></div>
 </div>
 
 <script>
-    const mijnVragen = [
-        { vraag: "Pineapple on pizza", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Socks in sandals", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
-        { vraag: "Self-sabotage", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
-        { vraag: "Keeping plants alive", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Tattoo laser", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Snooze alarm clock", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
-        { vraag: "Cats", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Dogs", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Not cleaning the phone", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
-        { vraag: "Painting nails", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Prank call scammers", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Harry styles", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Spain", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "One knot in shoelaces", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
-        { vraag: "Hummus", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Slipping", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Cap", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
-        { vraag: "Smoking", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
-        { vraag: "Bee", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Christmas", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-        { vraag: "Horoscope", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
-    ];
+// ================= FIREBASE =================
+const firebaseConfig = {
+  apiKey: "AIzaSyDd03--DAfqcHPhFvEEtNgABMqi_KRa5A",
+  authDomain: "redgreenflag-5f9a5.firebaseapp.com",
+  projectId: "redgreenflag-5f9a5",
+  storageBucket: "redgreenflag-5f9a5.firebasestorage.app",
+  messagingSenderId: "729047340960",
+  appId: "1:729047340960:web:4792e4124d26eeeef5b6c5",
+  measurementId: "G-RYWXBTESPB"
+};
 
-    let score = 0;
-    let huidigeVraagIndex = 0;
-    let spelerNaam = "";
-    let resultaten = JSON.parse(localStorage.getItem("cancelResults")) || [];
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
 
-    function startQuiz() {
-        const input = document.getElementById("naamInput").value.trim();
+// ================= QUIZ DATA =================
+const mijnVragen = [
+    { vraag:"Pineapple on pizza", opties:[{tekst:"Yes",p:1},{tekst:"No",p:-1}] },
+    { vraag:"Socks in sandals", opties:[{tekst:"Yes",p:-1},{tekst:"No",p:1}] },
+    { vraag:"Cats", opties:[{tekst:"Yes",p:1},{tekst:"No",p:-1}] },
+    { vraag:"Dogs", opties:[{tekst:"Yes",p:1},{tekst:"No",p:-1}] },
+];
 
-        if (input === "") {
-            alert("Enter a name!");
-            return;
-        }
+let score = 0;
+let index = 0;
+let naam = "";
 
-        spelerNaam = input;
+// ================= START =================
+function startQuiz(){
+    naam = document.getElementById("naamInput").value.trim();
+    if(!naam) return alert("Enter name!");
 
-        document.getElementById("startScreen").style.display = "none";
-        document.getElementById("quizCard").style.display = "block";
+    document.getElementById("startScreen").style.display="none";
+    document.getElementById("quizCard").style.display="block";
 
-        toonVraag();
+    toonVraag();
+}
+
+// ================= VRAGEN =================
+function toonVraag(){
+
+    if(index >= mijnVragen.length){
+        eind();
+        return;
     }
 
-    function toonVraag() {
-        const display = document.getElementById('vraagDisplay');
-        const knoppenDiv = document.getElementById('knoppen');
+    const q = mijnVragen[index];
+    document.getElementById("vraagDisplay").innerText = q.vraag;
 
-        if (huidigeVraagIndex >= mijnVragen.length) {
-            let eindTekst = "";
-            let klasse = "";
+    const div = document.getElementById("knoppen");
+    div.innerHTML = "";
 
-            if (score < 0) {
-                eindTekst = "CANCELLED";
-                klasse = "cancelled";
-            } else if (score > 0) {
-                eindTekst = "NOT CANCELLED";
-                klasse = "not-cancelled";
-            } else {
-                eindTekst = "NEUTRAL";
-                klasse = "";
-            }
+    q.opties.forEach(o=>{
+        const b = document.createElement("button");
+        b.innerText = o.tekst;
+        b.onclick = ()=>{
+            score += o.p;
+            index++;
+            kleur();
+            toonVraag();
+        };
+        div.appendChild(b);
+    });
+}
 
-            // Opslaan
-            resultaten.push({
-                naam: spelerNaam,
-                status: eindTekst
-            });
+// ================= KLEUR =================
+function kleur(){
+    let r=255,g=255,b=255;
+    let i = Math.min(Math.abs(score)*40,255);
 
-            localStorage.setItem("cancelResults", JSON.stringify(resultaten));
+    if(score>0){ r=255-i; b=255-i; }
+    if(score<0){ g=255-i; b=255-i; }
 
-            // Leaderboard
-            let lijst = "<h3>Results:</h3>";
-            resultaten.forEach(r => {
-                lijst += `<p>${r.naam}: ${r.status}</p>`;
-            });
+    document.body.style.background = `rgb(${r},${g},${b})`;
+}
 
-            display.innerHTML = `
-                <div class="resultaat-tekst ${klasse}">${eindTekst}</div>
-                ${lijst}
-            `;
+// ================= EINDE + FIRESTORE =================
+async function eind(){
 
-            knoppenDiv.innerHTML = '<button onclick="location.reload()">Try Again</button>';
-            return;
-        }
+    let status = "NEUTRAL";
+    let cls = "";
 
-        const data = mijnVragen[huidigeVraagIndex];
-        display.innerText = data.vraag;
-        knoppenDiv.innerHTML = ''; 
+    if(score > 0){ status="NOT CANCELLED"; cls="not-cancelled"; }
+    if(score < 0){ status="CANCELLED"; cls="cancelled"; }
 
-        data.opties.forEach(optie => {
-            const btn = document.createElement('button');
-            btn.innerText = optie.tekst;
-            btn.onclick = () => verwerkAntwoord(optie.p);
-            knoppenDiv.appendChild(btn);
+    // SAVE TO FIRESTORE
+    await db.collection("results").add({
+        naam: naam,
+        status: status,
+        score: score,
+        time: Date.now()
+    });
+
+    // LIVE LEADERBOARD
+    db.collection("results")
+      .orderBy("time","desc")
+      .onSnapshot(snapshot=>{
+
+        let html = `<div class="resultaat-tekst ${cls}">${status}</div><h3>Leaderboard</h3>`;
+
+        snapshot.forEach(doc=>{
+            let d = doc.data();
+            html += `<p>${d.naam}: ${d.status}</p>`;
         });
-    }
 
-    function verwerkAntwoord(punten) {
-        score += punten;
-        huidigeVraagIndex++;
-        updateKleur();
-        toonVraag();
-    }
+        document.getElementById("vraagDisplay").innerHTML = html;
+        document.getElementById("knoppen").innerHTML =
+            `<button onclick="location.reload()">Try again</button>`;
+      });
+}
 
-    function updateKleur() {
-        let r = 255, g = 255, b = 255;
-        let intensiteit = Math.min(Math.abs(score) * 40, 255);
-
-        if (score > 0) { 
-            r = 255 - intensiteit;
-            b = 255 - intensiteit;
-            g = 255; 
-        } else if (score < 0) {
-            g = 255 - intensiteit;
-            b = 255 - intensiteit;
-            r = 255;
-        }
-        
-        document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
-    }
 </script>
-
 </body>
 </html>
