@@ -36,8 +36,16 @@
             color: white;
         }
         button:hover { transform: scale(1.05); background-color: #000; }
-        
-        /* Styling voor het eindresultaat */
+
+        input {
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            width: 80%;
+            margin-bottom: 15px;
+            font-size: 1rem;
+        }
+
         .resultaat-tekst {
             font-size: 2.5rem;
             font-weight: 900;
@@ -50,7 +58,16 @@
 </head>
 <body id="bg">
 
-<div class="card">
+<!-- START SCREEN -->
+<div id="startScreen" class="card">
+    <h2>Enter your name</h2>
+    <input type="text" id="naamInput" placeholder="Your name">
+    <br>
+    <button onclick="startQuiz()">Start</button>
+</div>
+
+<!-- QUIZ -->
+<div class="card" id="quizCard" style="display:none;">
     <h2 id="vraagDisplay">Laden...</h2>
     <div id="knoppen" class="knop-container"></div>
 </div>
@@ -77,11 +94,29 @@
         { vraag: "Smoking", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
         { vraag: "Bee", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
         { vraag: "Christmas", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
- 			{ vraag: "Horoscope", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Horoscope", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
     ];
 
     let score = 0;
     let huidigeVraagIndex = 0;
+    let spelerNaam = "";
+    let resultaten = JSON.parse(localStorage.getItem("cancelResults")) || [];
+
+    function startQuiz() {
+        const input = document.getElementById("naamInput").value.trim();
+
+        if (input === "") {
+            alert("Enter a name!");
+            return;
+        }
+
+        spelerNaam = input;
+
+        document.getElementById("startScreen").style.display = "none";
+        document.getElementById("quizCard").style.display = "block";
+
+        toonVraag();
+    }
 
     function toonVraag() {
         const display = document.getElementById('vraagDisplay');
@@ -102,7 +137,25 @@
                 klasse = "";
             }
 
-            display.innerHTML = `<div class="resultaat-tekst ${klasse}">${eindTekst}</div>`;
+            // Opslaan
+            resultaten.push({
+                naam: spelerNaam,
+                status: eindTekst
+            });
+
+            localStorage.setItem("cancelResults", JSON.stringify(resultaten));
+
+            // Leaderboard
+            let lijst = "<h3>Results:</h3>";
+            resultaten.forEach(r => {
+                lijst += `<p>${r.naam}: ${r.status}</p>`;
+            });
+
+            display.innerHTML = `
+                <div class="resultaat-tekst ${klasse}">${eindTekst}</div>
+                ${lijst}
+            `;
+
             knoppenDiv.innerHTML = '<button onclick="location.reload()">Try Again</button>';
             return;
         }
@@ -142,8 +195,6 @@
         
         document.body.style.backgroundColor = `rgb(${r}, ${g}, ${b})`;
     }
-
-    toonVraag();
 </script>
 
 </body>
