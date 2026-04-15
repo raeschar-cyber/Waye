@@ -8,6 +8,12 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <style>
+.knop-container { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+}
+
 body { 
     margin: 0; 
     height: 100vh; 
@@ -66,13 +72,13 @@ input {
 
 <div id="quizCard" class="card" style="display:none;">
     <h2 id="vraagDisplay"></h2>
-    <div id="knoppen"></div>
+    <div id="knoppen" class="knop-container"></div>
 </div>
 
 <script>
 // ================= FIREBASE =================
 const firebaseConfig = {
-  apiKey: "AIzaSyDd03--DAfqcHPhFvEEtNgABMqi_KRa5A",
+  apiKey: "AIzaSyDd03–DAfqcHPhFvEEtNgABMqi_KRa5A",
   authDomain: "redgreenflag-5f9a5.firebaseapp.com",
   projectId: "redgreenflag-5f9a5",
   storageBucket: "redgreenflag-5f9a5.firebasestorage.app",
@@ -85,12 +91,29 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // ================= QUIZ DATA =================
-const mijnVragen = [
-    { vraag:"Pineapple on pizza", opties:[{tekst:"Yes",p:1},{tekst:"No",p:-1}] },
-    { vraag:"Socks in sandals", opties:[{tekst:"Yes",p:-1},{tekst:"No",p:1}] },
-    { vraag:"Cats", opties:[{tekst:"Yes",p:1},{tekst:"No",p:-1}] },
-    { vraag:"Dogs", opties:[{tekst:"Yes",p:1},{tekst:"No",p:-1}] },
-];
+    const mijnVragen = [
+        { vraag: "Pineapple on pizza", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Socks in sandals", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Self-sabotage", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Keeping plants alive", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Tattoo laser", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Snooze alarm clock", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Cats", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Dogs", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Not cleaning the phone", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Painting nails", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Prank call scammers", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Harry styles", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Spain", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "One knot in shoelaces", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Hummus", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Slipping", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Cap", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Smoking", opties: [{tekst: "Yes", p: -1}, {tekst: "No", p: 1}] },
+        { vraag: "Bee", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Christmas", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+        { vraag: "Horoscope", opties: [{tekst: "Yes", p: 1}, {tekst: "No", p: -1}] },
+    ];
 
 let score = 0;
 let index = 0;
